@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Khata Desk: your back-office helper, inside WhatsApp</title>
+<meta name="description" content="Khata Desk is a WhatsApp assistant for kirana stores, salons and clinics. Send a voice note, and it logs credit, reminds customers and sends a 9 PM summary.">
+<style>
+  :root{
+    --green:#25D366;
+    --green-deep:#0F7A55;
+    --green-soft:#E6F6EC;
+    --ink:#1B2A23;
+    --ink-soft:#52615A;
+    --line:#DCE8E0;
+    --paper:#FFFFFF;
+    --page:#FDFEFC;
+    --notebook:#FFF6CF;
+    --notebook-line:#E9D98B;
+    --radius:22px;
+    --font:ui-rounded,"SF Pro Rounded","Nunito","Varela Round","Quicksand","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    --hand:"Bradley Hand","Segoe Print","Comic Sans MS","Chilanka",cursive;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:var(--page);
+    line-height:1.55;
+    font-size:18px;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;max-width:100%}
+  a{color:inherit}
+  .wrap{width:min(1120px,100% - 40px);margin-inline:auto}
+  :focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:10px}
+
+  /* Buttons */
+  .btn{
+    display:inline-flex;align-items:center;gap:.6rem;
+    font:inherit;font-weight:800;font-size:1.08rem;
+    padding:.95rem 1.7rem;border-radius:999px;border:0;cursor:pointer;
+    text-decoration:none;background:var(--green);color:var(--ink);
+    box-shadow:0 6px 0 var(--green-deep);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{transform:translateY(2px);box-shadow:0 4px 0 var(--green-deep)}
+  .btn:active{transform:translateY(6px);box-shadow:0 0 0 var(--green-deep)}
+  .btn.ghost{background:transparent;box-shadow:none;border:2px solid var(--ink);padding:.8rem 1.4rem}
+  .btn.ghost:hover{background:var(--green-soft);transform:none}
+  .btn svg{width:22px;height:22px;flex:none}
+
+  /* Top bar */
+  header.top{padding:22px 0}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.25rem;text-decoration:none;letter-spacing:-.01em}
+  .logo-mark{
+    width:38px;height:38px;border-radius:12px;background:var(--green);
+    display:grid;place-items:center;
+  }
+  .logo-mark svg{width:22px;height:22px}
+  header.top a.small{font-weight:700;font-size:.98rem;text-decoration:none;color:var(--green-deep)}
+  header.top a.small:hover{text-decoration:underline}
+
+  /* Hero */
+  .hero{padding:clamp(28px,5vw,64px) 0 clamp(56px,8vw,110px)}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,72px);align-items:center}
+  h1{
+    font-size:clamp(2.05rem,4.6vw,3.55rem);
+    line-height:1.12;font-weight:900;letter-spacing:-.025em;
+    text-wrap:balance;
+  }
+  .sub{margin-top:22px;font-size:clamp(1.1rem,1.8vw,1.3rem);color:var(--ink-soft);max-width:30em}
+  .hero-cta{margin-top:34px;display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+  .hero-note{font-size:.98rem;color:var(--ink-soft)}
+
+  /* Hero art: notebook + phone */
+  .scene{position:relative;min-height:470px}
+  .notebook{
+    position:absolute;left:0;top:30px;width:62%;
+    background:var(--notebook);
+    border-radius:8px 18px 18px 8px;
+    padding:26px 22px 30px 44px;
+    transform:rotate(-5deg);
+    box-shadow:0 16px 30px rgba(60,50,10,.14);
+    background-image:repeating-linear-gradient(to bottom,transparent 0 35px,var(--notebook-line) 35px 36px);
+    background-position:0 14px;
+  }
+  .notebook::before{ /* margin line */
+    content:"";position:absolute;left:34px;top:0;bottom:0;width:2px;background:#E8A0A0;opacity:.7;
+  }
+  .notebook::after{ /* binding holes */
+    content:"";position:absolute;left:10px;top:30px;bottom:30px;width:12px;
+    background:radial-gradient(circle,#fff 5px,transparent 6px) 0 0/12px 52px repeat-y;
+  }
+  .notebook p{font-family:var(--hand);font-size:1.25rem;line-height:36px;color:#3a3320;white-space:nowrap}
+  .notebook .q{color:#B3402F}
+  .phone{
+    position:absolute;right:0;top:0;width:min(300px,64%);
+    background:#fff;border:7px solid var(--ink);border-radius:36px;
+    box-shadow:0 22px 40px rgba(20,40,30,.2);
+    overflow:hidden;
+  }
+  .phone-bar{background:var(--green-deep);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:.95rem}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--green);display:grid;place-items:center}
+  .avatar svg{width:16px;height:16px}
+  .chat{background:#EFE9DE;padding:14px 10px 18px;display:flex;flex-direction:column;gap:9px;min-height:360px}
+  .bubble{max-width:88%;padding:9px 12px;border-radius:14px;font-size:.88rem;line-height:1.4;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+  .me{align-self:flex-end;background:#D9FDD3;border-top-right-radius:4px}
+  .bot{align-self:flex-start;background:#fff;border-top-left-radius:4px}
+  .voice{display:flex;align-items:center;gap:8px;min-width:190px}
+  .play{width:28px;height:28px;border-radius:50%;background:var(--green-deep);display:grid;place-items:center;flex:none}
+  .play svg{width:12px;height:12px;margin-left:2px}
+  .wave{display:flex;align-items:center;gap:2px;height:22px;flex:1}
+  .wave i{display:block;width:3px;border-radius:2px;background:#6E9A85}
+  .time{font-size:.7rem;color:var(--ink-soft)}
+  .bot b{font-weight:800}
+  .upi{display:inline-block;margin-top:6px;background:var(--green-soft);color:var(--green-deep);font-weight:800;padding:4px 10px;border-radius:999px;font-size:.78rem}
+  .caption{font-size:.72rem;color:var(--ink-soft);text-align:center;margin-top:-2px}
+
+  /* The one orchestrated moment: chat plays in sequence */
+  @media (prefers-reduced-motion:no-preference){
+    .chat .bubble{opacity:0;transform:translateY(8px);animation:pop .5s ease forwards}
+    .chat .bubble:nth-child(1){animation-delay:.5s}
+    .chat .bubble:nth-child(2){animation-delay:1.5s}
+    .chat .bubble:nth-child(3){animation-delay:2.6s}
+    .wave i{animation:none}
+    @keyframes pop{to{opacity:1;transform:none}}
+  }
+
+  /* Sections */
+  section{padding:clamp(56px,8vw,104px) 0}
+  h2{font-size:clamp(1.7rem,3.4vw,2.5rem);line-height:1.18;font-weight:900;letter-spacing:-.02em;text-wrap:balance}
+  .lead{margin-top:14px;color:var(--ink-soft);max-width:34em}
+
+  /* Problem */
+  .problem{background:var(--green-soft)}
+  .pain-grid{margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(24px,4vw,56px)}
+  .pain svg{width:64px;height:64px;margin-bottom:16px}
+  .pain h3{font-size:1.25rem;font-weight:800;line-height:1.3}
+  .pain p{margin-top:6px;color:var(--ink-soft)}
+
+  /* Solution */
+  .steps{margin-top:48px;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,36px);counter-reset:s}
+  .step{position:relative;background:var(--paper);border:2px solid var(--line);border-radius:var(--radius);padding:26px 22px 24px}
+  .step .n{
+    position:absolute;top:-18px;left:22px;width:38px;height:38px;border-radius:50%;
+    background:var(--green);color:var(--ink);font-weight:900;display:grid;place-items:center;
+  }
+  .step h3{font-size:1.2rem;font-weight:800;margin-top:6px}
+  .step p{color:var(--ink-soft);margin-top:4px;font-size:1rem}
+  .mini{margin-top:18px;background:#EFE9DE;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;font-size:.88rem}
+  .mini .bubble{max-width:100%}
+  .summary-lines{display:grid;gap:4px;margin-top:6px;font-size:.84rem}
+  .summary-lines span{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+  .summary-lines b{font-weight:800}
+
+  .trades{margin-top:64px;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,3vw,32px)}
+  .trade{text-align:center}
+  .trade svg{width:100%;height:auto;border-radius:var(--radius);background:var(--green-soft)}
+  .trade h3{margin-top:14px;font-size:1.15rem;font-weight:800}
+  .trade p{font-size:.98rem;color:var(--ink-soft);margin-top:2px}
+  .works-for{margin-top:56px;text-align:center}
+  .works-for h3{font-size:1.35rem;font-weight:800}
+
+  /* Pilot */
+  .pilot .card{
+    background:var(--ink);color:#fff;border-radius:32px;
+    padding:clamp(32px,6vw,64px);
+    display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(28px,5vw,60px);align-items:center;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;background:var(--green);color:var(--ink);
+    font-weight:800;font-size:.92rem;padding:6px 14px;border-radius:999px;margin-bottom:18px;
+  }
+  .badge i{width:9px;height:9px;border-radius:50%;background:var(--ink);display:block}
+  .pilot h2{color:#fff}
+  .pilot p{color:#C5D6CC;margin-top:14px;max-width:30em}
+  .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .slot{
+    aspect-ratio:1;border-radius:50%;border:2px dashed #5C7A69;display:grid;place-items:center;
+    color:#7FA08C;
+  }
+  .slot svg{width:42%;height:42%}
+  .slots-label{margin-top:14px;font-weight:700;color:#fff;font-size:1rem}
+  .slots-label small{display:block;font-weight:500;color:#9FB8A9;font-size:.88rem;margin-top:2px}
+
+  /* CTA */
+  .cta{text-align:center;padding-bottom:clamp(64px,9vw,120px)}
+  .cta h2{max-width:18em;margin-inline:auto}
+  .cta .btn{margin-top:30px;font-size:1.15rem;padding:1.05rem 2rem}
+  .refer{margin-top:44px;padding-top:34px;border-top:2px dashed var(--line);max-width:34em;margin-inline:auto}
+  .refer p{font-size:1.2rem;font-weight:700}
+  .refer .actions{margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .toast{min-height:1.4em;margin-top:12px;font-size:.95rem;color:var(--green-deep);font-weight:700}
+
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .cta .or{margin-top:18px;font-size:1.08rem;color:var(--ink-soft)}
+
+  /* Plans */
+  .plans-sec{background:var(--green-soft)}
+  .note{
+    margin-top:24px;display:flex;gap:14px;align-items:flex-start;
+    background:#fff;border:2px solid var(--green);border-radius:var(--radius);
+    padding:18px 20px;max-width:46em;
+  }
+  .note svg{width:28px;height:28px;flex:none;margin-top:2px}
+  .note p{font-size:1.02rem}
+  .note b{font-weight:800}
+  .table-scroll{margin-top:36px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.plans{
+    width:100%;min-width:480px;border-collapse:separate;border-spacing:0;
+    background:#fff;border-radius:var(--radius);overflow:hidden;border:2px solid var(--line);
+  }
+  .plans th,.plans td{padding:15px 14px;text-align:center;border-bottom:1px solid var(--line)}
+  .plans tbody tr:last-child td,.plans tbody tr:last-child th{border-bottom:0}
+  .plans thead th{border-bottom:2px solid var(--line);vertical-align:bottom;padding-top:22px;padding-bottom:20px;background:#fff}
+  .plans .feat{text-align:left;font-weight:600;font-size:1rem;width:46%}
+  .plan-name{display:block;font-weight:800;font-size:1.1rem}
+  .plan-price{display:block;font-weight:900;font-size:1.55rem;letter-spacing:-.02em;margin-top:2px}
+  .plan-price small{font-size:.8rem;font-weight:700;color:var(--ink-soft);letter-spacing:0}
+  .plans td svg{width:28px;height:28px;margin-inline:auto}
+  .plans tbody tr:nth-child(even) > *{background:#FAFCFA}
+  .plans-foot{margin-top:16px;font-size:.92rem;color:var(--ink-soft)}
+
+  /* Footer + socials */
+  footer{padding:40px 0 44px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:.92rem}
+  footer .wrap{display:grid;gap:22px}
+  footer h3{font-size:1.05rem;font-weight:800;color:var(--ink)}
+  .socials{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+  .socials a{
+    display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);
+    font-weight:700;font-size:.98rem;padding:9px 16px 9px 12px;border-radius:999px;border:2px solid var(--line);
+    transition:background .12s ease,border-color .12s ease;
+  }
+  .socials a:hover{background:var(--green-soft);border-color:var(--green)}
+  .socials svg{width:22px;height:22px;flex:none}
+  .legal{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  /* Responsive */
+  @media (max-width:900px){
+    .hero-grid,.pilot .card{grid-template-columns:1fr}
+    .scene{min-height:500px;max-width:520px;margin-inline:auto;width:100%}
+    .steps,.pain-grid,.trades{grid-template-columns:1fr}
+    .steps{gap:34px}
+    .trades{max-width:420px;margin-inline:auto}
+  }
+  @media (max-width:520px){
+    body{font-size:17px}
+    .notebook{width:70%;padding-left:40px}
+    .notebook p{font-size:1.05rem}
+    .phone{width:68%}
+    .scene{min-height:470px}
+    .hero-cta .btn{width:100%;justify-content:center}
+    .slots{grid-template-columns:repeat(5,1fr);gap:8px}
+    table.plans{min-width:0}
+    .plans th,.plans td{padding:12px 6px}
+    .plans .feat{font-size:.9rem;padding-left:12px;width:40%}
+    .plan-name{font-size:.92rem}
+    .plan-price{font-size:1.2rem}
+    .plan-price small{display:block;font-size:.7rem}
+    .plans td svg{width:24px;height:24px}
+    .note{padding:14px}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="ig-grad" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FEDA75"/>
+      <stop offset=".3" stop-color="#FA7E1E"/>
+      <stop offset=".55" stop-color="#D62976"/>
+      <stop offset=".8" stop-color="#962FBF"/>
+      <stop offset="1" stop-color="#4F5BD5"/>
+    </linearGradient>
+  </defs>
+  <symbol id="tick" viewBox="0 0 28 28">
+    <circle cx="14" cy="14" r="13" fill="#25D366"/>
+    <path d="M8 14.5l4 4 8-9" fill="none" stroke="#1B2A23" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="cross" viewBox="0 0 28 28">
+    <circle cx="14" cy="14" r="13" fill="#F1F3F2"/>
+    <path d="M9.5 9.5l9 9M18.5 9.5l-9 9" fill="none" stroke="#8A9690" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top" id="top">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1B2A23" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h11a3 3 0 0 1 3 3v11H8a3 3 0 0 1-3-3V5z"/><path d="M9 10h6M9 14h4"/></svg>
+      </span>
+      Khata Desk
+    </a>
+    <a class="small" href="#join">Join the pilot</a>
+  </div>
+</header>
+
+<main>
+
+<!-- 1. HERO -->
+<section class="hero" aria-labelledby="hero-title" style="padding-top:clamp(28px,5vw,64px)">
+  <div class="wrap hero-grid">
+    <div>
+      <h1 id="hero-title">Somewhere in your shop is a notebook of money you're too busy, or too polite, to chase.</h1>
+      <p class="sub">Khata Desk is a helper inside WhatsApp that records your udhaar and reminds customers for you. Send one voice note.</p>
+      <div class="hero-cta">
+        <a class="btn" href="#join">
+          Join the Pilot
+        </a>
+        <span class="hero-note">No app. No training. No typing.</span>
+      </div>
+    </div>
+
+    <div class="scene" aria-label="A paper udhaar notebook beside a WhatsApp chat where Khata Desk logs an entry and sends a reminder">
+      <div class="notebook" aria-hidden="true">
+        <p>Gill sahib &nbsp;1,200</p>
+        <p>Sharma ji &nbsp;450</p>
+        <p>Bittu &nbsp;80 <span class="q">(kab?)</span></p>
+        <p>Rani aunty &nbsp;<span class="q">?</span></p>
+        <p>Dhillon &nbsp;640</p>
+      </div>
+      <div class="phone">
+        <div class="phone-bar">
+          <span class="avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1B2A23" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h11a3 3 0 0 1 3 3v11H8a3 3 0 0 1-3-3V5z"/></svg>
+          </span>
+          Khata Desk
+        </div>
+        <div class="chat">
+          <div class="bubble me">
+            <div class="voice">
+              <span class="play" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M1 0l11 6-11 6z" fill="#fff"/></svg></span>
+              <span class="wave" aria-hidden="true">
+                <i style="height:6px"></i><i style="height:14px"></i><i style="height:9px"></i><i style="height:20px"></i><i style="height:12px"></i><i style="height:18px"></i><i style="height:7px"></i><i style="height:15px"></i><i style="height:10px"></i><i style="height:5px"></i>
+              </span>
+              <span class="time">0:04</span>
+            </div>
+            <div style="margin-top:4px;font-size:.8rem;color:var(--ink-soft)">"Sharma ji 450 udhaar"</div>
+          </div>
+          <div class="bubble bot">
+            Written down: <b>Sharma ji, ₹450</b>.<br>
+            I'll remind him on Friday.
+          </div>
+          <div class="bubble bot">
+            Namaste Sharma ji, a small reminder of ₹450 at Gupta Store.
+            <br><span class="upi">Pay with UPI</span>
+          </div>
+          <div class="caption">Sample chat</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. PROBLEM -->
+<section class="problem" aria-labelledby="problem-title">
+  <div class="wrap">
+    <h2 id="problem-title">You're running everything. Some of it slips.</h2>
+    <div class="pain-grid">
+      <div class="pain">
+        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" fill="#fff"/>
+          <rect x="16" y="20" width="32" height="24" rx="4" fill="#FFF6CF" stroke="#1B2A23" stroke-width="2.4"/>
+          <circle cx="32" cy="32" r="6" stroke="#1B2A23" stroke-width="2.4"/>
+          <path d="M24 32h.01M40 32h.01" stroke="#1B2A23" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M44 14l6 6M50 14l-6 6" stroke="#B3402F" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        <h3>Udhaar never comes back</h3>
+        <p>Small amounts add up, and asking feels awkward.</p>
+      </div>
+      <div class="pain">
+        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" fill="#fff"/>
+          <rect x="15" y="18" width="34" height="30" rx="5" fill="#fff" stroke="#1B2A23" stroke-width="2.4"/>
+          <path d="M15 28h34" stroke="#1B2A23" stroke-width="2.4"/>
+          <path d="M24 14v8M40 14v8" stroke="#1B2A23" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="40" cy="39" r="6" fill="#25D366" stroke="#1B2A23" stroke-width="2.2"/>
+          <path d="M40 36v3.4l2 1.3" stroke="#1B2A23" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h3>Reminders never get sent</h3>
+        <p>The slot sits empty because nobody confirmed it.</p>
+      </div>
+      <div class="pain">
+        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" fill="#fff"/>
+          <circle cx="26" cy="22" r="6" fill="#FFE1C9" stroke="#1B2A23" stroke-width="2.4"/>
+          <path d="M16 46c0-8 4-13 10-13s10 5 10 13" stroke="#1B2A23" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M42 36l8 0M46 32l4 4-4 4" stroke="#1B2A23" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+          <path d="M44 20h8M44 25h5" stroke="#1B2A23" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5" opacity=".5"/>
+        </svg>
+        <h3>Regulars quietly drift away</h3>
+        <p>You only notice after they stop coming.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. SOLUTION -->
+<section aria-labelledby="solution-title">
+  <div class="wrap">
+    <h2 id="solution-title">Say it once. Khata Desk does the follow-up.</h2>
+    <p class="lead">It lives in the WhatsApp you already use. Hindi, Punjabi or English.</p>
+
+    <div class="steps">
+      <div class="step">
+        <span class="n">1</span>
+        <h3>Send a voice note</h3>
+        <p>Just say who and how much.</p>
+        <div class="mini" aria-hidden="true">
+          <div class="bubble me">
+            <div class="voice">
+              <span class="play"><svg viewBox="0 0 12 12"><path d="M1 0l11 6-11 6z" fill="#fff"/></svg></span>
+              <span class="wave"><i style="height:6px"></i><i style="height:15px"></i><i style="height:9px"></i><i style="height:19px"></i><i style="height:11px"></i><i style="height:17px"></i><i style="height:7px"></i><i style="height:12px"></i></span>
+              <span class="time">0:04</span>
+            </div>
+            <div style="margin-top:4px;font-size:.84rem">"Sharma ji 450 udhaar"</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="n">2</span>
+        <h3>It logs it and reminds</h3>
+        <p>Your customer gets a polite message with a UPI link.</p>
+        <div class="mini" aria-hidden="true">
+          <div class="bubble bot">Written down: <b>Sharma ji, ₹450</b></div>
+          <div class="bubble bot">Namaste Sharma ji, a small reminder of ₹450.<br><span class="upi">Pay with UPI</span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="n">3</span>
+        <h3>You get a 9 PM summary</h3>
+        <p>Sales, dues and tomorrow's schedule in one message.</p>
+        <div class="mini" aria-hidden="true">
+          <div class="bubble bot">
+            <b>Today at your shop</b>
+            <div class="summary-lines">
+              <span>Sales <b>₹ ...</b></span>
+              <span>Dues pending <b>₹ ...</b></span>
+              <span>Tomorrow <b>appointments</b></span>
+            </div>
+          </div>
+          <div class="caption">Sample layout</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="works-for">
+      <h3>Business Use Cases</h3>
+    </div>
+
+    <div class="trades">
+      <!-- Kirana -->
+      <div class="trade">
+        <svg viewBox="0 0 240 170" role="img" aria-label="Illustration of a kirana counter with jars on a shelf and a striped awning">
+          <rect width="240" height="170" fill="#E6F6EC"/>
+          <!-- awning -->
+          <g>
+            <rect x="20" y="14" width="200" height="22" fill="#fff"/>
+            <path d="M20 14h25v22H20z M70 14h25v22H70z M120 14h25v22h-25z M170 14h25v22h-25z" fill="#25D366"/>
+            <path d="M20 36q12.5 14 25 0t25 0 25 0 25 0 25 0 25 0 25 0 25 0" fill="#fff" stroke="none"/>
+            <path d="M20 36q12.5 14 25 0M70 36q12.5 14 25 0M120 36q12.5 14 25 0M170 36q12.5 14 25 0" fill="#25D366"/>
+            <rect x="20" y="14" width="200" height="22" fill="none" stroke="#1B2A23" stroke-width="2.4"/>
+          </g>
+          <!-- shelves -->
+          <path d="M34 78h172M34 112h172" stroke="#1B2A23" stroke-width="2.4" stroke-linecap="round"/>
+          <!-- jars -->
+          <g stroke="#1B2A23" stroke-width="2.2">
+            <rect x="42" y="56" width="22" height="22" rx="4" fill="#FFE8A3"/>
+            <rect x="72" y="52" width="22" height="26" rx="4" fill="#fff"/>
+            <rect x="102" y="58" width="22" height="20" rx="4" fill="#FFD9C2"/>
+            <rect x="132" y="54" width="22" height="24" rx="4" fill="#D9F1E1"/>
+            <rect x="162" y="58" width="30" height="20" rx="4" fill="#FFE8A3"/>
+            <rect x="46" y="92" width="26" height="20" rx="3" fill="#FFD9C2"/>
+            <rect x="80" y="90" width="18" height="22" rx="9" fill="#fff"/>
+            <rect x="108" y="94" width="30" height="18" rx="3" fill="#D9F1E1"/>
+            <rect x="148" y="90" width="22" height="22" rx="4" fill="#FFE8A3"/>
+            <rect x="178" y="94" width="20" height="18" rx="3" fill="#fff"/>
+          </g>
+          <!-- counter -->
+          <rect x="20" y="124" width="200" height="46" fill="#fff" stroke="#1B2A23" stroke-width="2.4"/>
+          <rect x="20" y="124" width="200" height="9" fill="#1B2A23"/>
+          <!-- scale + notebook on counter -->
+          <path d="M60 124v-9h26v9" stroke="#1B2A23" stroke-width="2.2" fill="#fff"/>
+          <rect x="150" y="113" width="36" height="11" rx="2" fill="#FFF6CF" stroke="#1B2A23" stroke-width="2"/>
+          <path d="M156 118h24" stroke="#B3402F" stroke-width="1.6"/>
+        </svg>
+        <h3>Kirana</h3>
+        <p>Track udhaar and remind regulars.</p>
+      </div>
+
+      <!-- Salon -->
+      <div class="trade">
+        <svg viewBox="0 0 240 170" role="img" aria-label="Illustration of a salon desk with a mirror and a chair">
+          <rect width="240" height="170" fill="#E6F6EC"/>
+          <!-- mirror -->
+          <ellipse cx="86" cy="68" rx="38" ry="48" fill="#fff" stroke="#1B2A23" stroke-width="2.6"/>
+          <ellipse cx="86" cy="68" rx="30" ry="40" fill="#D9F1E1"/>
+          <path d="M70 52q8-8 18-6" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <!-- lamp -->
+          <path d="M184 14v22" stroke="#1B2A23" stroke-width="2.4"/>
+          <path d="M168 54a16 16 0 0 1 32 0z" fill="#FFE8A3" stroke="#1B2A23" stroke-width="2.4"/>
+          <!-- chair -->
+          <rect x="146" y="82" width="52" height="40" rx="12" fill="#25D366" stroke="#1B2A23" stroke-width="2.4"/>
+          <rect x="142" y="112" width="60" height="14" rx="7" fill="#25D366" stroke="#1B2A23" stroke-width="2.4"/>
+          <path d="M172 126v20M156 148h32" stroke="#1B2A23" stroke-width="3" stroke-linecap="round"/>
+          <!-- desk -->
+          <rect x="20" y="124" width="104" height="46" fill="#fff" stroke="#1B2A23" stroke-width="2.4"/>
+          <rect x="20" y="124" width="104" height="9" fill="#1B2A23"/>
+          <!-- items on desk -->
+          <rect x="34" y="104" width="12" height="20" rx="3" fill="#FFD9C2" stroke="#1B2A23" stroke-width="2"/>
+          <rect x="54" y="110" width="10" height="14" rx="3" fill="#fff" stroke="#1B2A23" stroke-width="2"/>
+          <path d="M80 124l14-24M92 124l-6-24" stroke="#1B2A23" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="104" cy="116" r="0" />
+          <rect x="98" y="108" width="18" height="16" rx="2" fill="#FFF6CF" stroke="#1B2A23" stroke-width="2"/>
+        </svg>
+        <h3>Salons</h3>
+        <p>Confirm bookings and fill empty slots.</p>
+      </div>
+
+      <!-- Clinic -->
+      <div class="trade">
+        <svg viewBox="0 0 240 170" role="img" aria-label="Illustration of a clinic reception desk with a cross sign and a plant">
+          <rect width="240" height="170" fill="#E6F6EC"/>
+          <!-- sign -->
+          <rect x="94" y="16" width="52" height="52" rx="12" fill="#fff" stroke="#1B2A23" stroke-width="2.6"/>
+          <path d="M120 28v28M106 42h28" stroke="#25D366" stroke-width="9" stroke-linecap="round"/>
+          <!-- plant -->
+          <path d="M40 124v-16h28v16" fill="#FFD9C2" stroke="#1B2A23" stroke-width="2.4"/>
+          <path d="M54 108c-10-12-8-26 0-34 8 8 10 22 0 34zM54 108c10-8 16-18 14-28-10 4-16 16-14 28zM54 108c-12-4-20-12-20-22 10 0 18 8 20 22z" fill="#25D366" stroke="#1B2A23" stroke-width="2"/>
+          <!-- token display -->
+          <rect x="164" y="82" width="46" height="30" rx="5" fill="#1B2A23"/>
+          <text x="187" y="104" text-anchor="middle" font-family="ui-rounded,system-ui,sans-serif" font-size="18" font-weight="800" fill="#25D366">12</text>
+          <path d="M187 112v12" stroke="#1B2A23" stroke-width="2.4"/>
+          <!-- desk -->
+          <rect x="20" y="124" width="200" height="46" fill="#fff" stroke="#1B2A23" stroke-width="2.4"/>
+          <rect x="20" y="124" width="200" height="9" fill="#1B2A23"/>
+          <!-- appointment book -->
+          <rect x="100" y="110" width="40" height="14" rx="2" fill="#FFF6CF" stroke="#1B2A23" stroke-width="2"/>
+          <path d="M106 116h28" stroke="#B3402F" stroke-width="1.6"/>
+          <!-- stethoscope -->
+          <path d="M78 124v-6a8 8 0 0 1 16 0" stroke="#1B2A23" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <h3>Clinics</h3>
+        <p>Give patients tokens and refill reminders.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. PILOT -->
+<section class="pilot" aria-labelledby="pilot-title" style="padding-top:0">
+  <div class="wrap">
+    <div class="card">
+      <div>
+        <span class="badge"><i></i>Pilot open</span>
+        <h2 id="pilot-title">We're onboarding our first 20 shops.</h2>
+        <p>The pilot is free for these 20 shops. We set up each one by hand, so we can learn what really helps, and early shops get a say in what we build.</p>
+      </div>
+      <div>
+        <div class="slots" role="img" aria-label="Twenty pilot spots, all currently open">
+          <!-- 20 open slots -->
+        </div>
+        <p class="slots-label">20 spots, all open<small>Be one of the first.</small></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section class="plans-sec" id="plans" aria-labelledby="plans-title">
+  <div class="wrap">
+    <h2 id="plans-title">Simple plans, only if you want them</h2>
+    <div class="note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0F7A55" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
+      <p><b>The pilot is free for the first 20 stores we onboard.</b> Membership is optional and starts only after the 2-month pilot ends.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table class="plans">
+        <caption class="sr">Khata Desk plans and the features included in each</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="feat"><span class="sr">Feature</span></th>
+            <th scope="col"><span class="plan-name">Starter</span><span class="plan-price">₹199<small>/month</small></span></th>
+            <th scope="col"><span class="plan-name">Growth</span><span class="plan-price">₹349<small>/month</small></span></th>
+            <th scope="col"><span class="plan-name">Pro</span><span class="plan-price">₹499<small>/month</small></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" class="feat">Voice-note udhaar ledger</th>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">Hindi, Punjabi and English</th>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">UPI payment reminders</th>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">9 PM daily summary</th>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">Bookings and appointment reminders</th>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">Clinic tokens and wait time</th>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">Bring-back and refill nudges</th>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">Extra staff phone numbers</th>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+          <tr><th scope="row" class="feat">Priority support</th>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Not included"><use href="#cross"/></svg></td>
+            <td><svg role="img" aria-label="Included"><use href="#tick"/></svg></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="plans-foot">Prices are per store, per month. Plans and features may change before paid membership begins.</p>
+  </div>
+</section>
+
+<!-- 5. CTA -->
+<section class="cta" id="join" aria-labelledby="cta-title">
+  <div class="wrap">
+    <h2 id="cta-title">Ready to stop chasing and start collecting?</h2>
+    <!-- Replace 9830XXXX with your full contact number (also update the tel: link) -->
+    <a class="btn" href="tel:+919830XXXX">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1B2A23" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+      Reach out to us on 9830XXXX
+    </a>
+    <p class="or">or DM us on any of our social media handles below.</p>
+
+    <div class="refer">
+      <p>Know a shop owner who still runs on a notebook? Tag them.</p>
+      <div class="actions">
+        <button class="btn ghost" id="share" type="button">Share this page</button>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <h3>Find us on social media</h3>
+      <!-- Replace each href and handle with your real accounts -->
+      <div class="socials">
+        <a href="https://www.instagram.com/khatadesk" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="url(#ig-grad)"/><rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.2" cy="7.8" r=".9" fill="#fff"/></svg>
+          Instagram @khatadesk
+        </a>
+        <a href="https://www.linkedin.com/company/khatadesk" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#0A66C2"/><path d="M7.6 10.2v6M7.6 7.4v.01M11.4 16.2v-6M11.4 12.7c0-1.5.9-2.5 2.3-2.5s2.2 1 2.2 2.5v3.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          LinkedIn Khata Desk
+        </a>
+        <a href="https://twitter.com/khatadesk" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#1DA1F2"/><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+          Twitter @khatadesk
+        </a>
+        <a href="https://www.facebook.com/khatadesk" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#1877F2"/><path d="M13.4 19v-6h2l.4-2.5h-2.4V9.2c0-.7.3-1.2 1.3-1.2h1.2V5.8c-.3 0-1-.1-1.8-.1-1.9 0-3.1 1.1-3.1 3.2v1.6H9v2.5h2v6z" fill="#fff"/></svg>
+          Facebook Khata Desk
+        </a>
+      </div>
+    </div>
+    <div class="legal">
+      <span>Khata Desk. Made for India's small shops.</span>
+      <span>Pilot version. Features may change.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Build the 20 open pilot slots
+  (function(){
+    var box=document.querySelector('.slots'), html='';
+    for(var i=0;i<20;i++){
+      html+='<span class="slot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>';
+    }
+    box.innerHTML=html;
+  })();
+
+  // Share for the secondary visitor: native share sheet, else copy the link
+  (function(){
+    var btn=document.getElementById('share'), toast=document.getElementById('toast');
+    var text="Know a shop that still runs on a notebook? Khata Desk logs udhaar and sends reminders, all inside WhatsApp.";
+    function say(m){toast.textContent=m;setTimeout(function(){toast.textContent=''},3500)}
+    btn.addEventListener('click',function(){
+      var url=location.href;
+      if(navigator.share){
+        navigator.share({title:'Khata Desk',text:text,url:url}).catch(function(){});
+      }else if(navigator.clipboard){
+        navigator.clipboard.writeText(text+' '+url).then(function(){say('Link copied. Paste it in WhatsApp.')},function(){say('Could not copy. Please copy the page link.')});
+      }else{
+        say('Please copy the page link to share.');
+      }
+    });
+  })();
+</script>
+</body>
+</html>
