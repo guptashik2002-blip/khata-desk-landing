@@ -238,6 +238,51 @@
   .socials svg{width:22px;height:22px;flex:none}
   .legal{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
 
+  /* Readiness check (Task 4 feature) */
+  .check{background:var(--green-soft)}
+  .check-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:18px}
+  .live{
+    display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--green);
+    border-radius:999px;padding:8px 16px;font-weight:700;font-size:.98rem;
+  }
+  .live b{font-weight:900;font-size:1.15rem;font-variant-numeric:tabular-nums}
+  .live .dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:none;box-shadow:0 0 0 0 rgba(37,211,102,.6)}
+  @media (prefers-reduced-motion:no-preference){.live .dot{animation:pulse 2s infinite}@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}}
+  .live small{display:block;font-weight:600;color:var(--ink-soft);font-size:.82rem}
+  .check-grid{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,36px);align-items:start}
+  .check-form{background:#fff;border:2px solid var(--line);border-radius:var(--radius);padding:clamp(20px,3vw,30px)}
+  .check-form label{display:block;font-weight:800;font-size:1rem;margin-bottom:6px}
+  .check-form .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  .check-form select,.check-form textarea{
+    width:100%;font:inherit;font-size:1rem;color:var(--ink);background:var(--page);
+    border:2px solid var(--line);border-radius:14px;padding:11px 12px;
+  }
+  .check-form select:focus,.check-form textarea:focus{outline:none;border-color:var(--green-deep)}
+  .check-form textarea{min-height:130px;resize:vertical;line-height:1.45}
+  .hint{display:flex;justify-content:space-between;gap:10px;font-size:.85rem;color:var(--ink-soft);margin-top:6px}
+  .examples{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem;color:var(--ink-soft)}
+  .chip{font:inherit;font-size:.88rem;font-weight:700;background:var(--green-soft);color:var(--green-deep);border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+  .chip:hover{background:#d3efdc}
+  .check-form .btn{margin-top:22px;width:100%;justify-content:center}
+  .check-form .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+  .fine{margin-top:12px;font-size:.82rem;color:var(--ink-soft);text-align:center}
+  .reply{background:#EFE9DE;border-radius:var(--radius);border:2px solid var(--line);overflow:hidden}
+  .reply .phone-bar{border-radius:0}
+  .reply-body{padding:18px 14px 22px;display:flex;flex-direction:column;gap:10px;min-height:340px}
+  .reply .bubble{font-size:.95rem;max-width:94%}
+  .gap{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+  .gap:last-child{border-bottom:0;padding-bottom:2px}
+  .gap .num{width:28px;height:28px;border-radius:50%;background:var(--green);font-weight:900;display:grid;place-items:center;font-size:.9rem}
+  .gap p{line-height:1.45}
+  .gap b{font-weight:800}
+  .typing{display:inline-flex;gap:4px;padding:4px 2px}
+  .typing i{width:7px;height:7px;border-radius:50%;background:#9AB3A6;display:block}
+  @media (prefers-reduced-motion:no-preference){.typing i{animation:blink 1.2s infinite}.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}@keyframes blink{50%{opacity:.25}}}
+  .reply-cta{margin-top:4px;align-self:flex-start;font-weight:800;color:var(--green-deep);font-size:.92rem}
+  .err{background:#FDECEA;color:#8A2A1D}
+  @media (max-width:900px){.check-grid{grid-template-columns:1fr}}
+  @media (max-width:520px){.check-form .row{grid-template-columns:1fr}}
+
   /* Responsive */
   @media (max-width:900px){
     .hero-grid,.pilot .card{grid-template-columns:1fr}
@@ -311,6 +356,7 @@
         <a class="btn" href="#join">
           Join the Pilot
         </a>
+        <a class="btn ghost" href="#check">Try a free check</a>
         <span class="hero-note">No app. No training. No typing.</span>
       </div>
     </div>
@@ -553,8 +599,68 @@
   </div>
 </section>
 
+<!-- TRY IT: Khata readiness check (Gemini + Supabase) -->
+<section class="check" id="check" aria-labelledby="check-title">
+  <div class="wrap">
+    <div class="check-head">
+      <div>
+        <h2 id="check-title">Is money slipping out of your shop?</h2>
+        <p class="lead">Tell us about your shop, salon or clinic in two or three lines. Get the top 3 things quietly costing you money, and how Khata Desk fixes each one.</p>
+      </div>
+      <div class="live" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span>
+        <span><b id="stat-count">…</b> owners checked this week<small id="stat-top">Counting live</small></span>
+      </div>
+    </div>
+
+    <div class="check-grid">
+      <form class="check-form" id="check-form" novalidate>
+        <div class="row">
+          <div>
+            <label for="btype">Business type</label>
+            <select id="btype" required>
+              <option value="Kirana">Kirana</option>
+              <option value="Salon">Salon</option>
+              <option value="Clinic">Clinic</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="bstage">Stage</label>
+            <select id="bstage" required>
+              <option value="Just starting">Just starting</option>
+              <option value="Established 1-3 years" selected>Established, 1 to 3 years</option>
+              <option value="Established 3+ years">Established, 3+ years</option>
+            </select>
+          </div>
+        </div>
+        <label for="bdesc">Your business, in your words</label>
+        <textarea id="bdesc" maxlength="1000" required placeholder="I run a small kirana store. I write udhaar in a notebook and sometimes forget to follow up with regulars."></textarea>
+        <div class="hint"><span>Hindi, Hinglish or English is fine. No names or phone numbers.</span><span id="chars">0/1000</span></div>
+        <div class="examples">Try an example:
+          <button type="button" class="chip" data-ex="0">Kirana</button>
+          <button type="button" class="chip" data-ex="1">Salon</button>
+          <button type="button" class="chip" data-ex="2">Clinic</button>
+        </div>
+        <button class="btn" type="submit" id="check-btn">Check my shop</button>
+        <p class="fine" id="remaining">5 free checks per visitor. Takes about 5 seconds.</p>
+      </form>
+
+      <div class="reply" aria-live="polite">
+        <div class="phone-bar">
+          <span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="#1B2A23" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M9 10h6M9 14h6"/></svg></span>
+          Khata Desk
+        </div>
+        <div class="reply-body" id="reply-body">
+          <div class="bubble bot">Namaste! Fill in the form and I'll tell you where your shop is losing money. 🙏</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 4. PILOT -->
-<section class="pilot" aria-labelledby="pilot-title" style="padding-top:0">
+<section class="pilot" aria-labelledby="pilot-title">
   <div class="wrap">
     <div class="card">
       <div>
@@ -714,6 +820,90 @@
       }else{
         say('Please copy the page link to share.');
       }
+    });
+  })();
+  // Khata readiness check: calls /api/business-readiness, shows live count from /api/stats
+  (function(){
+    var form=document.getElementById('check-form'), btn=document.getElementById('check-btn');
+    var desc=document.getElementById('bdesc'), type=document.getElementById('btype'), stage=document.getElementById('bstage');
+    var body=document.getElementById('reply-body'), chars=document.getElementById('chars'), rem=document.getElementById('remaining');
+    var EX=[
+      ['Kirana','Established 3+ years','Main ek kirana store chalata hoon. Udhaar notebook mein likhta hoon, around 40 regular customers ka. Kai log mahine bhar pay nahi karte aur mujhe yaad dilana awkward lagta hai.'],
+      ['Salon','Established 1-3 years','I run a 3-chair salon. Bookings come on WhatsApp and calls, I write them in a diary. Weekends have no-shows and weekdays have empty slots.'],
+      ['Clinic','Just starting','Small general clinic, one doctor. Patients wait without tokens and many forget to come back for follow-ups or refills.']
+    ];
+
+    var vid;
+    try{vid=localStorage.getItem('kd_vid')}catch(e){}
+    if(!vid){vid=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2,12);try{localStorage.setItem('kd_vid',vid)}catch(e){}}
+
+    function count(){chars.textContent=desc.value.length+'/1000'}
+    desc.addEventListener('input',count);
+    document.querySelectorAll('.chip').forEach(function(c){
+      c.addEventListener('click',function(){var e=EX[+c.dataset.ex];type.value=e[0];stage.value=e[1];desc.value=e[2];count();desc.focus()});
+    });
+
+    function bubble(cls){var d=document.createElement('div');d.className='bubble '+cls;body.appendChild(d);return d}
+    // Render **bold** safely (no innerHTML from the model)
+    function rich(el,text){
+      text.split(/(\*\*[^*]+\*\*)/).forEach(function(part){
+        if(/^\*\*[^*]+\*\*$/.test(part)){var b=document.createElement('b');b.textContent=part.slice(2,-2);el.appendChild(b)}
+        else if(part){el.appendChild(document.createTextNode(part))}
+      });
+    }
+    function render(text){
+      var b=bubble('bot');
+      var items=[],cur=null;
+      text.split('\n').forEach(function(line){
+        var t=line.trim(); if(!t)return;
+        var m=t.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
+        if(m){cur=m[1];items.push(cur)}
+        else if(items.length){items[items.length-1]+=' '+t}
+        else{items.push(t)}
+      });
+      if(items.length<2){rich(b,text);return b}
+      var h=document.createElement('p');h.style.fontWeight='800';h.textContent='Your top 3 money leaks:';b.appendChild(h);
+      items.forEach(function(it,i){
+        var row=document.createElement('div');row.className='gap';
+        var n=document.createElement('span');n.className='num';n.textContent=i+1;
+        var p=document.createElement('p');rich(p,it);
+        row.appendChild(n);row.appendChild(p);b.appendChild(row);
+      });
+      return b;
+    }
+
+    function loadStats(){
+      fetch('/api/stats').then(function(r){return r.ok?r.json():Promise.reject()}).then(function(d){
+        document.getElementById('stat-count').textContent=d.checksThisWeek;
+        document.getElementById('stat-top').textContent=d.topBusinessType?('Most from '+d.topBusinessType):'Be the first this week';
+      }).catch(function(){document.getElementById('stat-top').textContent='Live count unavailable'});
+    }
+    loadStats();
+
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+      var text=desc.value.trim();
+      if(text.length<10){desc.focus();rem.textContent='Please write a sentence or two about your business.';return}
+      body.innerHTML='';
+      var me=bubble('me');me.textContent=type.value+' · '+stage.value+'\n'+text;me.style.whiteSpace='pre-wrap';
+      var wait=bubble('bot');wait.innerHTML='<span class="typing" aria-label="Thinking"><i></i><i></i><i></i></span>';
+      btn.disabled=true;btn.textContent='Checking…';
+      if(window.innerWidth<900)body.parentElement.scrollIntoView({behavior:'smooth',block:'start'});
+      fetch('/api/business-readiness',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({description:text,businessType:type.value,stage:stage.value,visitorId:vid})})
+      .then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,d:d}})})
+      .then(function(x){
+        wait.remove();
+        if(!x.ok){var er=bubble('bot err');er.textContent=x.d.error||'Something went wrong.';
+          if(x.status===429){var a=document.createElement('a');a.href='#join';a.className='reply-cta';a.textContent='Join the pilot →';body.appendChild(a);rem.textContent='No free checks left on this device.'}
+          return;}
+        render(x.d.result);
+        if(!x.d.refused){var a=document.createElement('a');a.href='#join';a.className='reply-cta';a.textContent='Fix these with Khata Desk. Join the free pilot →';body.appendChild(a)}
+        if(typeof x.d.remaining==='number')rem.textContent=x.d.remaining+' free check'+(x.d.remaining===1?'':'s')+' left on this device.';
+        loadStats();
+      })
+      .catch(function(){wait.remove();bubble('bot err').textContent='Could not reach the server. Please try again.'})
+      .then(function(){btn.disabled=false;btn.textContent='Check my shop'});
     });
   })();
 </script>
